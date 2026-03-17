@@ -35,6 +35,7 @@ type apiConfig struct {
 	frontendAddress string
 	pathPrefix      string
 	sseWriteTimeout time.Duration
+	triggerSources  string
 }
 
 // apiLauncher can launch ADK REST API
@@ -72,6 +73,9 @@ func (a *apiLauncher) UserMessage(webURL string, printer func(v ...any)) {
 
 // SetupSubrouters adds the API router to the parent router.
 func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Config) error {
+	if a.config.triggerSources != "" {
+		config.TriggerSources = strings.Split(a.config.triggerSources, ",")
+	}
 	// Create the ADK REST API handler
 	apiHandler := adkrest.NewHandler(config, a.config.sseWriteTimeout)
 
@@ -125,6 +129,7 @@ func NewLauncher() weblauncher.Sublauncher {
 	fs.StringVar(&config.frontendAddress, "webui_address", "localhost:8080", "ADK WebUI address as seen from the user browser. It's used to allow CORS requests. Please specify only hostname and (optionally) port.")
 	fs.StringVar(&config.pathPrefix, "path_prefix", "/api", "ADK REST API path prefix. Default is '/api'.")
 	fs.DurationVar(&config.sseWriteTimeout, "sse-write-timeout", 120*time.Second, "SSE server write timeout (i.e. '10s', '2m' - see time.ParseDuration for details) - for writing the SSE response after reading the headers & body")
+	fs.StringVar(&config.triggerSources, "trigger_sources", "", "Comma-separated list of trigger sources to enable (bq, pubsub, eventarc)")
 
 	return &apiLauncher{
 		config: config,

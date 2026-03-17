@@ -42,6 +42,7 @@ func NewHandler(config *launcher.Config, sseWriteTimeout time.Duration) http.Han
 		routers.NewAppsAPIRouter(controllers.NewAppsAPIController(config.AgentLoader)),
 		routers.NewDebugAPIRouter(controllers.NewDebugAPIController(config.SessionService, config.AgentLoader, debugTelemetry)),
 		routers.NewArtifactsAPIRouter(controllers.NewArtifactsAPIController(config.ArtifactService)),
+		routers.NewTriggersAPIRouter(controllers.NewTriggersAPIController(), config.TriggerSources),
 		&routers.EvalAPIRouter{},
 	)
 	return router

@@ -63,4 +63,5 @@ type Config struct {
 	A2AOptions       []a2asrv.RequestHandlerOption
 	PluginConfig     runner.PluginConfig
 	TelemetryOptions []telemetry.Option
+	TriggerSources   []string
 }

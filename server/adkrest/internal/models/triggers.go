@@ -44,7 +44,7 @@ type PubSubTriggerRequest struct {
 
 // PubSubMessage represents the message for the PubSub trigger.
 type PubSubMessage struct {
-	// The message payload. This will always be a base64-encoded string.
+	// The message payload. This will always be a base64-encoded string. If this field is empty, the message must contain at least one attribute.
 	Data []byte `json:"data"`
 	// ID of this message, assigned by the Pub/Sub server.
 	MessageID string `json:"messageId"`

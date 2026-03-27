@@ -10,6 +10,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/gorilla/mux"
 	"google.golang.org/adk/agent"
 	"google.golang.org/adk/cmd/launcher"
 	"google.golang.org/adk/runner"
@@ -65,10 +66,11 @@ func TestPubSubTriggerHandler(t *testing.T) {
 				t.Fatalf("marshal request: %v", err)
 			}
 
-			req, err := http.NewRequest(http.MethodPost, "/triggers/pubsub", bytes.NewBuffer(reqBytes))
+			req, err := http.NewRequest(http.MethodPost, "/apps/test-agent/triggers/pubsub", bytes.NewBuffer(reqBytes))
 			if err != nil {
 				t.Fatalf("new request: %v", err)
 			}
+			req = mux.SetURLVars(req, map[string]string{"app_name": "test-agent"})
 			rr := httptest.NewRecorder()
 
 			apiController.PubSubTriggerHandler(rr, req)

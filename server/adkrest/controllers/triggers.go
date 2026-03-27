@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gorilla/mux"
 	"google.golang.org/adk/agent"
 	"google.golang.org/adk/artifact"
 	"google.golang.org/adk/cmd/launcher"
@@ -211,19 +212,11 @@ func calculateBackoff(attempt int, base, maxDelay time.Duration) time.Duration {
 }
 
 // Resolve the target app name from the request.
-// Strategy:
-//   1. Check X-ADK-App-Name header (explicit override)
-//   2. Fall back to the first available app (single-app deployment)
 func (c *TriggersAPIController) appName(r *http.Request) (string, error) {
-	appName := r.Header.Get("X-ADK-App-Name")
+	vars := mux.Vars(r)
+	appName := vars["app_name"]
 	if appName == "" {
-		apps := c.agentLoader.ListAgents()
-		if len(apps) > 0 {
-			appName = apps[0]
-		}
-	}
-	if appName == "" {
-		return "", fmt.Errorf("no application name provided and no agents loaded")
+		return "", fmt.Errorf("no application name provided")
 	}
 	return appName, nil
 }

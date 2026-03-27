@@ -19,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -28,7 +29,11 @@ import (
 	weblauncher "google.golang.org/adk/cmd/launcher/web"
 	"google.golang.org/adk/internal/cli/util"
 	"google.golang.org/adk/server/adkrest"
+	"google.golang.org/adk/telemetry"
 )
+
+// SupportedTriggers defines the allowed trigger sources for the ADK REST API.
+var SupportedTriggers = []string{"pubsub", "bq", "eventarc"}
 
 // apiConfig contains parametres for lauching ADK REST API
 type apiConfig struct {
@@ -80,6 +85,16 @@ func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Confi
 	if a.config.triggerSources != "" {
 		config.TriggerSources = strings.Split(a.config.triggerSources, ",")
 	}
+	if a.config.triggerSources != "" {
+		sources := strings.Split(a.config.triggerSources, ",")
+		for _, source := range sources {
+			if !slices.Contains(SupportedTriggers, source) {
+				return fmt.Errorf("invalid trigger source: %q. Allowed values are: %s", source, strings.Join(SupportedTriggers, ", "))
+			}
+		}
+		config.TriggerSources = sources
+	}
+
 	config.TriggerConfig = launcher.TriggerConfig{
 		MaxRetries:        a.config.triggerMaxRetries,
 		BaseDelay:         a.config.triggerBaseDelay,
@@ -88,10 +103,22 @@ func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Confi
 	}
 
 	// Create the ADK REST API handler
-	apiHandler := adkrest.NewHandler(config, a.config.sseWriteTimeout)
+	restServer, err := adkrest.NewServer(adkrest.ServerConfig{
+		SessionService:  config.SessionService,
+		MemoryService:   config.MemoryService,
+		AgentLoader:     config.AgentLoader,
+		ArtifactService: config.ArtifactService,
+		SSEWriteTimeout: a.config.sseWriteTimeout,
+		PluginConfig:    config.PluginConfig,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to create REST server: %w", err)
+	}
+
+	config.TelemetryOptions = append(config.TelemetryOptions, telemetry.WithSpanProcessors(restServer.SpanProcessor()), telemetry.WithLogRecordProcessors(restServer.LogProcessor()))
 
 	// Wrap it with CORS middleware
-	corsHandler := corsWithArgs(a.config.frontendAddress)(apiHandler)
+	corsHandler := corsWithArgs(a.config.frontendAddress)(restServer)
 
 	// If prefix is empty, don't use PathPrefix("") because it's too greedy.
 	// Instead, attach the handler to the main router directly.

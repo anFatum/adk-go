@@ -44,21 +44,21 @@ func (r *TriggersAPIRouter) Routes() Routes {
 			routes = append(routes, Route{
 				Name:        "BQTrigger",
 				Methods:     []string{http.MethodPost},
-				Pattern:     "/trigger/bq",
+				Pattern:     "/apps/{app_name}/trigger/bq",
 				HandlerFunc: r.controller.BQTriggerHandler,
 			})
 		case "pubsub":
 			routes = append(routes, Route{
 				Name:        "PubSubTrigger",
 				Methods:     []string{http.MethodPost},
-				Pattern:     "/trigger/pubsub",
+				Pattern:     "/apps/{app_name}/trigger/pubsub",
 				HandlerFunc: r.controller.PubSubTriggerHandler,
 			})
 		case "eventarc":
 			routes = append(routes, Route{
 				Name:        "EventarcTrigger",
 				Methods:     []string{http.MethodPost},
-				Pattern:     "/trigger/eventarc",
+				Pattern:     "/apps/{app_name}/trigger/eventarc",
 				HandlerFunc: r.controller.EventarcTriggerHandler,
 			})
 		}

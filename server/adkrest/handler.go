@@ -45,6 +45,7 @@ func NewServer(cfg ServerConfig) (*Server, error) {
 		routers.NewAppsAPIRouter(controllers.NewAppsAPIController(cfg.AgentLoader)),
 		routers.NewDebugAPIRouter(controllers.NewDebugAPIController(cfg.SessionService, cfg.AgentLoader, debugTelemetry)),
 		routers.NewArtifactsAPIRouter(controllers.NewArtifactsAPIController(cfg.ArtifactService)),
+		routers.NewTriggersAPIRouter(controllers.NewTriggersAPIController(), cfg.TriggerSources),
 		&routers.EvalAPIRouter{},
 	)
 	return &Server{

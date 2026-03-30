@@ -38,34 +38,33 @@ type BQTriggerResponse struct {
 // PubSubTriggerRequest represents the request for the PubSub trigger.
 // See: https://cloud.google.com/pubsub/docs/push#receive_push
 type PubSubTriggerRequest struct {
-	Message PubSubMessage `json:"message"`
-	Subscription string `json:"subscription"`
+	Message      PubSubMessage `json:"message"`
+	Subscription string        `json:"subscription"`
 }
 
 // PubSubMessage represents the message for the PubSub trigger.
 type PubSubMessage struct {
-	// The message payload. This will always be a base64-encoded string. If this field is empty, the message must contain at least one attribute.
+	// The message payload. This will always be a base64-encoded string.
 	Data []byte `json:"data"`
 	// ID of this message, assigned by the Pub/Sub server.
 	MessageID string `json:"messageId"`
 	// The time at which the message was published, populated by the server.
 	PublishTime string `json:"publishTime"`
 	// Optional attributes for this message. An object containing a list of 'key': 'value' string pairs.
-	Attributes  map[string]string `json:"attributes,omitempty"`
+	Attributes map[string]string `json:"attributes,omitempty"`
 }
-
 
 // EventarcTriggerRequest represents the request for the Eventarc trigger.
 // Eventarc / CloudEvents request format.
 //
 // Eventarc delivers events as CloudEvents over HTTP in two modes:
 //
-// 1. **Structured content mode** (JSON body): All CloudEvents attributes
-//    and the event data are in the JSON body.  Used by direct HTTP callers.
-// 2. **Binary content mode** (Eventarc default): CloudEvents attributes are
-//    sent as ``ce-*`` HTTP headers, and the body contains only the event
-//    data — typically a Pub/Sub message wrapper for Pub/Sub-sourced events:
-//    ``{"message": {"data": "<base64>", ...}, "subscription": "..."}``.
+//  1. **Structured content mode** (JSON body): All CloudEvents attributes
+//     and the event data are in the JSON body.  Used by direct HTTP callers.
+//  2. **Binary content mode** (Eventarc default): CloudEvents attributes are
+//     sent as “ce-*“ HTTP headers, and the body contains only the event
+//     data — typically a Pub/Sub message wrapper for Pub/Sub-sourced events:
+//     “{"message": {"data": "<base64>", ...}, "subscription": "..."}“.
 //
 // See: https://cloud.google.com/eventarc/docs/cloudevents
 type EventarcTriggerRequest struct {
@@ -73,8 +72,8 @@ type EventarcTriggerRequest struct {
 	// In binary mode, the entire body is the data (often a Pub/Sub wrapper).
 	Data map[string]json.RawMessage `json:"data,omitempty"`
 	// Binary mode: Pub/Sub message wrapper fields.
-	Message PubSubMessage `json:"message,omitempty"`
-	Subscription string `json:"subscription,omitempty"`
+	Message      PubSubMessage `json:"message,omitempty"`
+	Subscription string        `json:"subscription,omitempty"`
 }
 
 type CloudEventAttributes struct {

@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net/http"
 	"slices"
+	"slices"
 	"strings"
 	"time"
 
@@ -83,9 +84,6 @@ func (a *apiLauncher) UserMessage(webURL string, printer func(v ...any)) {
 // SetupSubrouters adds the API router to the parent router.
 func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Config) error {
 	if a.config.triggerSources != "" {
-		config.TriggerSources = strings.Split(a.config.triggerSources, ",")
-	}
-	if a.config.triggerSources != "" {
 		sources := strings.Split(a.config.triggerSources, ",")
 		for _, source := range sources {
 			if !slices.Contains(SupportedTriggers, source) {
@@ -110,6 +108,7 @@ func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Confi
 		ArtifactService: config.ArtifactService,
 		SSEWriteTimeout: a.config.sseWriteTimeout,
 		PluginConfig:    config.PluginConfig,
+		TriggerSources:  config.TriggerSources,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create REST server: %w", err)

@@ -62,6 +62,7 @@ type ServerConfig struct {
 	ArtifactService artifact.Service
 	SSEWriteTimeout time.Duration
 	PluginConfig    runner.PluginConfig
+	TriggerSources  []string
 }
 
 // Server is an HTTP server that serves the ADK REST API.

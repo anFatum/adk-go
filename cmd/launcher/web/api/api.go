@@ -19,6 +19,7 @@ import (
 	"flag"
 	"fmt"
 	"net/http"
+	"slices"
 	"strings"
 	"time"
 
@@ -31,11 +32,15 @@ import (
 	"google.golang.org/adk/telemetry"
 )
 
+// SupportedTriggers defines the allowed trigger sources for the ADK REST API.
+var SupportedTriggers = []string{"pubsub", "bq", "eventarc"}
+
 // apiConfig contains parametres for lauching ADK REST API
 type apiConfig struct {
 	frontendAddress string
 	pathPrefix      string
 	sseWriteTimeout time.Duration
+	triggerSources  string
 }
 
 // apiLauncher can launch ADK REST API
@@ -73,6 +78,15 @@ func (a *apiLauncher) UserMessage(webURL string, printer func(v ...any)) {
 
 // SetupSubrouters adds the API router to the parent router.
 func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Config) error {
+	if a.config.triggerSources != "" {
+		sources := strings.Split(a.config.triggerSources, ",")
+		for _, source := range sources {
+			if !slices.Contains(SupportedTriggers, source) {
+				return fmt.Errorf("invalid trigger source: %q. Allowed values are: %s", source, strings.Join(SupportedTriggers, ", "))
+			}
+		}
+		config.TriggerSources = sources
+	}
 	// Create the ADK REST API handler
 	restServer, err := adkrest.NewServer(adkrest.ServerConfig{
 		SessionService:  config.SessionService,
@@ -81,6 +95,7 @@ func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Confi
 		ArtifactService: config.ArtifactService,
 		SSEWriteTimeout: a.config.sseWriteTimeout,
 		PluginConfig:    config.PluginConfig,
+		TriggerSources:  config.TriggerSources,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create REST server: %w", err)
@@ -138,6 +153,7 @@ func NewLauncher() weblauncher.Sublauncher {
 	fs.StringVar(&config.frontendAddress, "webui_address", "localhost:8080", "ADK WebUI address as seen from the user browser. It's used to allow CORS requests. Please specify only hostname and (optionally) port.")
 	fs.StringVar(&config.pathPrefix, "path_prefix", "/api", "ADK REST API path prefix. Default is '/api'.")
 	fs.DurationVar(&config.sseWriteTimeout, "sse-write-timeout", 120*time.Second, "SSE server write timeout (i.e. '10s', '2m' - see time.ParseDuration for details) - for writing the SSE response after reading the headers & body")
+	fs.StringVar(&config.triggerSources, "trigger_sources", "", "Comma-separated list of trigger sources to enable (bq, pubsub, eventarc)")
 
 	return &apiLauncher{
 		config: config,

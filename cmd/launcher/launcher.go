@@ -74,4 +74,5 @@ type Config struct {
 	TelemetryOptions []telemetry.Option
 	TriggerSources   []string
 	TriggerConfig    TriggerConfig
+	TriggerSources   []string
 }

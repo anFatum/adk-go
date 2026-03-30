@@ -32,14 +32,17 @@ type BQTriggerRequest struct {
 // BQTriggerResponse represents the response for the BigQuery trigger.
 // See: https://docs.cloud.google.com/bigquery/docs/remote-functions#output_format
 type BQTriggerResponse struct {
+	// ErrorMessage indicates the error message in BQ response (if any).
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
 
 // PubSubTriggerRequest represents the request for the PubSub trigger.
 // See: https://cloud.google.com/pubsub/docs/push#receive_push
 type PubSubTriggerRequest struct {
-	Message      PubSubMessage `json:"message"`
-	Subscription string        `json:"subscription"`
+	// The Pub/Sub message.
+	Message PubSubMessage `json:"message"`
+	// The subscription this message was published to.
+	Subscription string `json:"subscription"`
 }
 
 // PubSubMessage represents the message for the PubSub trigger.
@@ -73,7 +76,8 @@ type EventarcTriggerRequest struct {
 	Data map[string]json.RawMessage `json:"data,omitempty"`
 	// Binary mode: Pub/Sub message wrapper fields.
 	Message      PubSubMessage `json:"message,omitempty"`
-	Subscription string        `json:"subscription,omitempty"`
+	// The subscription this message was published to.
+	Subscription string `json:"subscription,omitempty"`
 }
 
 type CloudEventAttributes struct {

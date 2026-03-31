@@ -24,6 +24,7 @@ import (
 
 	"google.golang.org/adk/agent"
 	"google.golang.org/adk/artifact"
+	"google.golang.org/adk/cmd/launcher"
 	"google.golang.org/adk/memory"
 	"google.golang.org/adk/runner"
 	"google.golang.org/adk/server/adkrest/controllers"
@@ -63,6 +64,7 @@ type ServerConfig struct {
 	SSEWriteTimeout time.Duration
 	PluginConfig    runner.PluginConfig
 	TriggerSources  []string
+	TriggerConfig   launcher.TriggerConfig
 }
 
 // Server is an HTTP server that serves the ADK REST API.

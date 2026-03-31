@@ -15,7 +15,6 @@
 package api
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"

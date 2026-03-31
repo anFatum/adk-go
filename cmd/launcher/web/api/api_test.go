@@ -18,6 +18,8 @@ import (
 	"slices"
 	"testing"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/gorilla/mux"
 
 	"google.golang.org/adk/cmd/launcher"
@@ -55,6 +57,12 @@ func TestSetupSubrouters_TriggerSourcesValidation(t *testing.T) {
 			wantSources:    []string{"pubsub", "bq", "eventarc"},
 		},
 		{
+			name:           "deduplicatedd trigger sources",
+			triggerSources: "bq,bq,bq",
+			wantErr:        false,
+			wantSources:    []string{"bq"},
+		},
+		{
 			name:           "invalid trigger source",
 			triggerSources: "invalid",
 			wantErr:        true,
@@ -87,8 +95,11 @@ func TestSetupSubrouters_TriggerSourcesValidation(t *testing.T) {
 				if err != nil {
 					t.Errorf("SetupSubrouters() error = %v, wantErr %v", err, tc.wantErr)
 				}
-				if !slices.Equal(config.TriggerSources, tc.wantSources) {
-					t.Errorf("SetupSubrouters() config.TriggerSources = %v, want %v", config.TriggerSources, tc.wantSources)
+				diff := cmp.Diff(tc.wantSources, config.TriggerSources, cmpopts.SortSlices(func(a, b string) bool {
+					return a < b
+				}))
+				if diff != "" {
+					t.Errorf("SetupSubrouters() config.TriggerSources mismatch (-want +got):\n%s", diff)
 				}
 			}
 		})

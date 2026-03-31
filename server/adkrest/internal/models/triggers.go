@@ -27,11 +27,15 @@ type BQTriggerRequest struct {
 	SessionUser string `json:"sessionUser"`
 	// Array of calls to the remote function.
 	Calls [][]json.RawMessage `json:"calls"`
+	// The user defined context that was used when creating the remote function in BigQuery. Optional.
+	UserDefinedContext map[string]any `json:"userDefinedContext"`
 }
 
 // BQTriggerResponse represents the response for the BigQuery trigger.
 // See: https://docs.cloud.google.com/bigquery/docs/remote-functions#output_format
 type BQTriggerResponse struct {
+	// A batch of return values. Size of the array must match the size of the JSON array of calls in the HTTP request.
+	Replies []json.RawMessage `json:"replies"`
 	// ErrorMessage indicates the error message in BQ response (if any).
 	ErrorMessage string `json:"errorMessage,omitempty"`
 }
@@ -55,6 +59,8 @@ type PubSubMessage struct {
 	PublishTime string `json:"publishTime"`
 	// Optional attributes for this message. An object containing a list of 'key': 'value' string pairs.
 	Attributes map[string]string `json:"attributes,omitempty"`
+	// If message ordering is enabled, this identifies related messages for which publish order should be respected.
+	OrderingKey string `json:"orderingKey,omitempty"`
 }
 
 // EventarcTriggerRequest represents the request for the Eventarc trigger.
@@ -75,7 +81,8 @@ type EventarcTriggerRequest struct {
 	// In binary mode, the entire body is the data (often a Pub/Sub wrapper).
 	Data map[string]json.RawMessage `json:"data,omitempty"`
 	// Binary mode: Pub/Sub message wrapper fields.
-	Message      PubSubMessage `json:"message,omitempty"`
+	// The Pub/Sub message.
+	Message PubSubMessage `json:"message,omitempty"`
 	// The subscription this message was published to.
 	Subscription string `json:"subscription,omitempty"`
 }

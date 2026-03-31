@@ -86,10 +86,12 @@ func (a *apiLauncher) SetupSubrouters(router *mux.Router, config *launcher.Confi
 		sources := strings.Split(a.config.triggerSources, ",")
 		for _, source := range sources {
 			if !slices.Contains(SupportedTriggers, source) {
-				return fmt.Errorf("invalid trigger source: %q. Allowed values are: %s", source, strings.Join(SupportedTriggers, ", "))
+				return fmt.Errorf("invalid trigger source: %q. Any subset of %s is allowed. Values should be comma-separated", source, strings.Join(SupportedTriggers, ", "))
 			}
 		}
-		config.TriggerSources = sources
+		// De-duplicate the input sources.
+		slices.Sort(sources)
+		config.TriggerSources = slices.Compact(sources)
 	}
 
 	config.TriggerConfig = launcher.TriggerConfig{
@@ -178,11 +180,11 @@ func NewLauncher() weblauncher.Sublauncher {
 	fs.StringVar(&config.frontendAddress, "webui_address", "localhost:8080", "ADK WebUI address as seen from the user browser. It's used to allow CORS requests. Please specify only hostname and (optionally) port.")
 	fs.StringVar(&config.pathPrefix, "path_prefix", "/api", "ADK REST API path prefix. Default is '/api'.")
 	fs.DurationVar(&config.sseWriteTimeout, "sse-write-timeout", 120*time.Second, "SSE server write timeout (i.e. '10s', '2m' - see time.ParseDuration for details) - for writing the SSE response after reading the headers & body")
-	fs.StringVar(&config.triggerSources, "trigger_sources", "", "Comma-separated list of trigger sources to enable (bq, pubsub, eventarc)")
 	fs.IntVar(&config.triggerMaxRetries, "trigger_max_retries", 3, "Maximum retries for HTTP 429 errors from triggers")
 	fs.DurationVar(&config.triggerBaseDelay, "trigger_base_delay", 1*time.Second, "Base delay for trigger retry exponential backoff")
 	fs.DurationVar(&config.triggerMaxDelay, "trigger_max_delay", 10*time.Second, "Maximum delay for trigger retry exponential backoff")
 	fs.IntVar(&config.triggerMaxRuns, "trigger_max_concurrent_runs", 100, "Maximum concurrent trigger runs")
+	fs.StringVar(&config.triggerSources, "trigger_sources", "", fmt.Sprintf("Comma-separated list of trigger sources to enable (any subset of %s)", strings.Join(SupportedTriggers, ", ")))
 
 	return &apiLauncher{
 		config: config,
